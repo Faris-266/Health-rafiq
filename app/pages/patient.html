@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>رفيق · Rafiq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/common.css">
+<script src="/static/common.js"></script>
+<style>
+.sos{background:var(--red-soft);color:var(--red);padding:8px 20px;font-size:13.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sos b{font:600 15px var(--display)}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 40px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}.chatcol{order:-1}}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hello h1{margin:0 0 4px;font:600 22px var(--display)}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 12px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border-radius:99px;font-weight:600;font-size:13px}
+.pill i{width:9px;height:9px;border-radius:50%;background:currentColor}
+.pill.l0{background:var(--green-soft);color:var(--green)} .pill.l1{background:var(--amber-soft);color:var(--amber-ink)} .pill.l2{background:var(--red-soft);color:var(--red)} .pill.lx{background:var(--petrol-soft);color:var(--muted)}
+.read{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.read .big small{font-size:13px;color:var(--muted);font-weight:400}
+.med{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)} .med:last-child{border:0}
+.chat{display:flex;flex-direction:column;height:min(70vh,640px);padding:0;overflow:hidden}
+.chat>h4{margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
+.msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--petrol-soft);min-height:0}
+.b{max-width:88%;padding:7px 11px;border-radius:12px;white-space:pre-wrap;word-break:break-word;unicode-bidi:plaintext;box-shadow:var(--shadow)}
+.b.out{align-self:flex-start;background:var(--bubble-out);border-end-start-radius:3px}
+.b.in{align-self:flex-end;background:var(--bubble-in);border-end-end-radius:3px}
+.b time{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.qc{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px 0}
+.qc button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:3px 12px}
+.send{display:flex;gap:6px;padding:10px}
+.send input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--input);unicode-bidi:plaintext}
+.row2s{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><b>رفيق</b><span id="tag"></span></div>
+  <div class="ctl"><span class="who" id="who"></span><button class="icon-btn" id="theme" type="button"></button><button class="btn" id="lang" type="button"></button>
+    <button class="btn" id="pw" type="button"></button><button class="btn" id="logout" type="button"></button></div>
+</header>
+<div class="sos" id="sos"></div>
+<div class="wrap">
+  <div class="stack" id="left"></div>
+  <div class="stack chatcol">
+    <section class="card chat">
+      <h4 id="chat-h"></h4>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="qc" id="qc"></div>
+      <form class="send" id="send"><input id="m" autocomplete="off" dir="auto"><button class="btn primary" id="sb"></button></form>
+    </section>
+  </div>
+</div>
+<script>
+const R = window.RAFIQ, $ = (i) => document.getElementById(i), esc = R.esc;
+const L = {
+  ar: { tag: "بوابة المريض", hello: "أهلًا", sosT: "في حالة طارئة (ألم صدر، ضيق نفس، إغماء) اتصل بالإسعاف على", today: "حالتك اليوم", none: "لا توجد متابعة حديثة", st: ["ضمن النطاق ✔", "نتابعها معك", "تواصل مع طبيبك الآن"],
+    last: "آخر متابعة", start: "ابدأ متابعة اليوم", glucose: "السكر", bp: "ضغط الدم", trend: "آخر ٣٠ يومًا", noReading: "لا قراءات بعد", inRange: ["ضمن هدفك", "خارج هدفك، سيتابعها طبيبك", "تواصل مع طبيبك الآن"],
+    meds: "أدويتي", adherence: "الالتزام بالدواء", doctor: "طبيبك", chat: "تحدث مع رفيق", send: "إرسال", ph: "اكتب هنا…", settings: "تفضيلاتي", dialect: "اللهجة", gender: "الجنس", male: "ذكر", female: "أنثى", save: "حفظ", saved: "تم الحفظ",
+    chips: ["ابدأ", "نعم", "لا"], consent: "للبدء اكتب «نعم» في المحادثة للموافقة على المتابعة.", target: "الهدف", sym: "الأعراض", checkins: "آخر المتابعات", date: "التاريخ", mt: "الدواء", yes: "أخذ", no: "لم يأخذ" },
+  en: { tag: "Patient portal", hello: "Hello", sosT: "In an emergency (chest pain, trouble breathing, fainting) call the ambulance on", today: "Your status today", none: "No recent check-in", st: ["In range ✔", "We're following up", "Contact your doctor now"],
+    last: "Last check-in", start: "Start today's check-in", glucose: "Glucose", bp: "Blood pressure", trend: "Last 30 days", noReading: "No readings yet", inRange: ["Within your target", "Outside your target; your doctor will follow up", "Contact your doctor now"],
+    meds: "My medications", adherence: "Medication adherence", doctor: "Your doctor", chat: "Chat with Rafiq", send: "Send", ph: "Type here…", settings: "My preferences", dialect: "Dialect", gender: "Gender", male: "Male", female: "Female", save: "Save", saved: "Saved",
+    chips: ["ابدأ", "نعم", "لا"], consent: "To begin, type “نعم” (yes) in the chat to consent to follow-up.", target: "Target", sym: "Symptoms", checkins: "Recent check-ins", date: "Date", mt: "Meds", yes: "Taken", no: "Missed" },
+};
+const t = (k) => L[R.lang][k];
+let D = null, lastId = 0;
+
+function draw() {
+  if (!D) return;
+  const p = D.profile, lc = D.last_checkin, fresh = lc && (Date.now() - new Date(lc.created_at + "Z")) < 36 * 3600e3;
+  const lvl = fresh ? lc.level : null;
+  $("tag").textContent = t("tag"); $("sos").innerHTML = `<b>⚠</b> ${t("sosT")} <b class="num" dir="ltr">${esc(p.emergency_number)}</b>`;
+  $("chat-h").textContent = t("chat"); $("sb").textContent = t("send"); $("m").placeholder = t("ph");
+  $("qc").innerHTML = t("chips").map((c) => `<button type="button" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  const ts = (r) => new Date(r.taken_at + "Z").getTime();
+  const gl = D.readings.filter((r) => r.kind === "glucose").map((r) => ({ t: ts(r), v: Math.round(r.value1), l: r.level }));
+  const bpr = D.readings.filter((r) => r.kind === "bp"), sys = bpr.map((r) => ({ t: ts(r), v: Math.round(r.value1), l: r.level })), dia = bpr.map((r) => ({ t: ts(r), v: Math.round(r.value2), l: r.level }));
+  const lg = D.readings.filter((r) => r.kind === "glucose").at(-1), lb = bpr.at(-1);
+  const strip = D.checkins.slice(0, 14).reverse().map((c) => `<i class="${c.meds_taken === 1 ? "y" : c.meds_taken === 0 ? "n" : ""}" title="${c.local_date}"></i>`).join("");
+  const sn = (c) => D.symptoms[c] ? D.symptoms[c][R.lang === "ar" ? 1 : 0] : c;
+  const readCard = (title, last, val, unit, chart) => `<section class="card"><h4><span>${title}</span><span class="note">${t("trend")}</span></h4>
+    ${last ? `<div class="read"><div class="big num">${val}<small> ${unit}</small></div><span class="pill l${last.level}"><i></i>${t("inRange")[last.level]}</span></div>` : `<div class="note">${t("noReading")}</div>`}${chart}</section>`;
+  $("left").innerHTML = `<section class="card hello"><h1>${t("hello")} ${esc(p.name)}</h1>
+      <div class="status"><span class="note">${t("today")}:</span><span class="pill ${lvl == null ? "lx" : "l" + lvl}"><i></i>${lvl == null ? t("none") : t("st")[lvl]}</span></div>
+      ${p.consent ? "" : `<div class="banner warn" style="background:var(--amber-soft);color:var(--amber-ink);padding:8px 12px;border-radius:8px;margin-bottom:8px">${t("consent")}</div>`}
+      <div class="note">${lc ? t("last") + ": " + R.ago(lc.created_at) : ""} ${p.doctor ? "· " + t("doctor") + ": " + esc(p.doctor) : ""}</div>
+      <div style="margin-top:12px"><button class="btn primary" id="startci" type="button">${t("start")}</button></div></section>
+    ${p.conditions.includes("diabetes") ? readCard(t("glucose"), lg, lg ? Math.round(lg.value1) : "", "mg/dL", R.lineChart([{ pts: gl, color: "var(--petrol)" }], { band: [70, 130], yMin: 40, yMax: Math.max(250, ...gl.map((x) => x.v + 10)), targetLabel: t("target"), noData: "" })) : ""}
+    ${p.conditions.includes("hypertension") ? readCard(t("bp"), lb, lb ? Math.round(lb.value1) + "/" + Math.round(lb.value2) : "", "mmHg", R.lineChart([{ pts: sys, color: "var(--petrol)" }, { pts: dia, color: "var(--muted)", dash: "4 3" }], { band: [90, 139], yMin: 50, yMax: Math.max(190, ...sys.map((x) => x.v + 10)), targetLabel: t("target"), noData: "" })) : ""}
+    <section class="card"><h4><span>${t("meds")}</span><span class="big num" style="font-size:18px">${D.adherence_pct == null ? "" : R.nf(D.adherence_pct) + "%"}</span></h4>
+      ${D.medications.map((m) => `<div class="med"><span dir="auto">${esc(m.name)} ${esc(m.dose || "")}</span><span class="num" dir="ltr">${m.times.join(" · ")}</span></div>`).join("") || `<div class="note">—</div>`}
+      <div class="note" style="margin-top:8px">${t("adherence")}</div><div class="strip">${strip}</div></section>
+    <section class="card"><h4>${t("checkins")}</h4><table><tr><th>${t("date")}</th><th>${t("sym")}</th><th>${t("mt")}</th></tr>
+      ${D.checkins.slice(0, 5).map((c) => `<tr><td class="num">${c.local_date}</td><td>${esc(c.symptoms.map(sn).join(", ") || "—")}</td><td>${c.meds_taken == null ? "—" : c.meds_taken ? t("yes") : t("no")}</td></tr>`).join("")}</table></section>
+    <section class="card"><h4>${t("settings")}</h4><div class="row2s">
+      <label class="field"><span>${t("dialect")}</span><select id="s-d">${Object.entries(D.dialects).map(([k, v]) => `<option value="${k}" ${k === p.dialect ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></label>
+      <label class="field"><span>${t("gender")}</span><select id="s-g"><option value="m" ${p.gender === "m" ? "selected" : ""}>${t("male")}</option><option value="f" ${p.gender === "f" ? "selected" : ""}>${t("female")}</option></select></label></div>
+      <button class="btn" id="s-save" type="button">${t("save")}</button></section>`;
+  $("startci").onclick = () => say("ابدأ");
+  $("s-save").onclick = async () => { await R.patch("/api/me/preferences", { dialect: $("s-d").value, gender: $("s-g").value }); R.toast(t("saved")); load(); };
+}
+function bubble(m) {
+  const time = new Date(m.created_at + "Z").toLocaleTimeString(R.lang === "ar" ? "ar-EG" : "en", { hour: "2-digit", minute: "2-digit" });
+  return `<div class="b ${m.direction === "in" ? "in" : "out"}">${esc(m.body)}<time>${time}</time></div>`;
+}
+async function pull() {
+  const ms = await R.api("/api/me/messages?after=" + lastId);
+  if (!ms.length) return false;
+  $("msgs").insertAdjacentHTML("beforeend", ms.map(bubble).join("")); lastId = ms.at(-1).id; $("msgs").scrollTop = $("msgs").scrollHeight; return true;
+}
+async function say(text) {
+  if (!text.trim()) return;
+  $("sb").disabled = true;
+  try { await R.post("/api/me/chat", { text }); await pull(); await load(); } catch (e) { R.toast(e.message); } finally { $("sb").disabled = false; }
+}
+async function load() { D = await R.api("/api/me/summary"); draw(); }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-c]"); if (b) say(b.dataset.c); });
+$("send").onsubmit = (e) => { e.preventDefault(); const v = $("m").value; $("m").value = ""; say(v); };
+(async function init() {
+  R.chrome({ onLang: draw });
+  const me = await R.api("/api/auth/me");
+  R.chrome({ who: me.display_name, onLang: draw });
+  await load(); await pull();
+  setInterval(() => { if (!document.hidden) pull(); }, 6000);
+})();
+</script>
+</body>
+</html>

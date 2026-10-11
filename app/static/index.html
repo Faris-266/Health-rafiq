@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>رفيق · Rafiq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF2F1; --surface:#FAFCFB; --ink:#0D2B2E; --muted:#5F7377; --line:#D3DDDA; --petrol:#12494F; --petrol-soft:#DCE9E7;
+  --red:#D6283A; --red-soft:#FBE5E8; --amber:#E39A0B; --amber-soft:#FCF0D5; --green:#2E8B57; --green-soft:#E0F1E7;
+  --bubble-in:#DDF1E4; --bubble-out:#FFFFFF; --shadow:0 1px 0 rgba(13,43,46,.06);
+  --display:'Readex Pro','IBM Plex Sans Arabic',system-ui,sans-serif; --body:'IBM Plex Sans Arabic','Readex Pro',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0C1B1E; --surface:#122629; --ink:#E6F0EE; --muted:#93AAAD; --line:#243B3F; --petrol:#7FC4C0; --petrol-soft:#183336;
+    --red:#FF6B7A; --red-soft:#3A1C22; --amber:#F2B83D; --amber-soft:#35290E; --green:#5FC38A; --green-soft:#16301F;
+    --bubble-in:#1C4030; --bubble-out:#1A3135;
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.55 var(--body);padding-top:env(safe-area-inset-top,0)}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--petrol);outline-offset:2px}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+
+header{display:flex;flex-wrap:wrap;align-items:center;gap:18px;padding:12px 20px;background:var(--petrol);color:#F2FAF8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) header{background:#0A2E31;color:#E6F0EE}}
+.brand{display:flex;align-items:baseline;gap:10px;margin-inline-end:auto}
+.brand b{font:600 26px/1 var(--display);letter-spacing:0}
+.brand span{opacity:.75;font-size:12px}
+.kpis{display:flex;gap:22px;flex-wrap:wrap}
+.kpi{display:flex;flex-direction:column;min-width:64px}
+.kpi b{font:500 22px/1.1 var(--display)}
+.kpi small{opacity:.78;font-size:11.5px}
+.kpi.urgent b{color:#FFB3BB}
+header .ctl{display:flex;gap:8px;align-items:center}
+header .ctl button{background:transparent;border:1px solid rgba(255,255,255,.4);color:inherit;border-radius:6px;padding:4px 10px}
+.chan{font-size:11.5px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.16)}
+
+main{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr) minmax(300px,360px);gap:14px;padding:14px 20px 20px;height:calc(100% - 66px);min-height:640px}
+@media (max-width:1180px){main{grid-template-columns:1fr;height:auto}}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.col>h2{margin:0;padding:12px 14px;font:500 15px var(--display);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.col>h2 .sp{margin-inline-start:auto}
+.scroll{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:0;flex:1}
+
+.tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:8px 12px;border-bottom:2px solid transparent;color:var(--muted)}
+.tabs button[aria-selected=true]{color:var(--ink);border-color:var(--petrol);font-weight:600}
+
+/* triage tag */
+.tag{position:relative;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px 12px;padding-inline-start:30px;box-shadow:var(--shadow);cursor:pointer}
+.tag::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:18px;background:var(--c);border-start-start-radius:7px;border-end-start-radius:7px}
+.tag::after{content:"";position:absolute;inset-block-start:9px;inset-inline-start:5px;width:8px;height:8px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.tag.l2{--c:var(--red)} .tag.l1{--c:var(--amber)} .tag.l0{--c:var(--green)}
+.tag.sel{outline:2px solid var(--petrol)}
+.tag.done{opacity:.6}
+.tag h3{margin:0;font:600 14.5px var(--display);display:flex;gap:8px;align-items:center}
+.tag h3 time{margin-inline-start:auto;font:400 11.5px var(--body);color:var(--muted)}
+.lvl{font:600 11px var(--display);padding:1px 7px;border-radius:99px}
+.l2 .lvl{background:var(--red-soft);color:var(--red)} .l1 .lvl{background:var(--amber-soft);color:#8A5A00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .l1 .lvl{color:var(--amber)}}
+.tag pre{margin:6px 0 0;font:13px/1.55 var(--body);white-space:pre-wrap;word-break:break-word}
+.acts{display:flex;gap:6px;margin-top:8px}
+.acts button,.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 10px}
+.acts button.primary,.btn.primary{background:var(--petrol);color:#fff;border-color:var(--petrol)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary,:root:not([data-theme="light"]) .acts button.primary{color:#07201f}}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+
+.row{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.row.sel{outline:2px solid var(--petrol)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:none}
+.dot.l1{background:var(--amber)} .dot.l2{background:var(--red)}
+.row .meta{margin-inline-start:auto;text-align:end;font-size:12px;color:var(--muted)}
+
+/* detail */
+.detail{padding:16px;overflow:auto;flex:1;min-height:0}
+.empty{margin:auto;color:var(--muted);text-align:center;padding:40px 20px}
+.phead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;margin-bottom:14px}
+.phead h1{margin:0;font:600 24px var(--display)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;padding:2px 9px;border-radius:99px;background:var(--petrol-soft);color:var(--petrol)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}
+.card h4{margin:0 0 6px;font:500 13px var(--display);color:var(--muted);display:flex;justify-content:space-between}
+.big{font:500 28px/1 var(--display)} .big small{font-size:13px;color:var(--muted);font-weight:400}
+svg.chart{width:100%;height:auto;display:block}
+.strip{display:flex;gap:5px;margin-top:8px}
+.strip i{width:16px;height:16px;border-radius:50%;background:var(--line);display:block}
+.strip i.y{background:var(--green)} .strip i.n{background:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+th{font-weight:500;color:var(--muted)}
+section{margin-top:14px}
+section>h4{margin:0 0 8px;font:500 14px var(--display)}
+
+/* simulator */
+.sim-top{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sim-top select{flex:1;min-width:0;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.chat{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--petrol-soft);min-height:0}
+.b{max-width:86%;padding:7px 10px;border-radius:12px;white-space:pre-wrap;word-break:break-word;unicode-bidi:plaintext;box-shadow:var(--shadow)}
+.b.out{align-self:flex-start;background:var(--bubble-out);border-end-start-radius:3px}
+.b.in{align-self:flex-end;background:var(--bubble-in);border-end-end-radius:3px}
+.b.clin{align-self:center;background:var(--amber-soft);font-size:12px;border-radius:8px;max-width:95%}
+.b time{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.qc{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px 0}
+.qc button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:2px 10px;font-size:12.5px}
+.send{display:flex;gap:6px;padding:10px}
+.send input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);unicode-bidi:plaintext}
+.hint{padding:0 10px 10px;font-size:11.5px;color:var(--muted)}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);padding:18px;max-width:380px}
+dialog input{width:100%;margin:10px 0;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--paper)}
+@media (prefers-reduced-motion:no-preference){.tag.fresh{animation:pulse 1.4s ease-out 1}@keyframes pulse{from{box-shadow:0 0 0 4px var(--red-soft)}to{box-shadow:var(--shadow)}}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><b>رفيق</b><span id="tag"></span></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="ctl"><span class="chan" id="chan"></span><button id="lang" aria-label="language">EN</button></div>
+</header>
+<main>
+  <section class="col" style="margin:0">
+    <div class="tabs" role="tablist"><button role="tab" id="t-alerts" aria-selected="true"></button><button role="tab" id="t-pts" aria-selected="false"></button></div>
+    <div class="scroll" id="left"></div>
+  </section>
+  <section class="col" style="margin:0"><div class="detail" id="detail"></div></section>
+  <section class="col" style="margin:0">
+    <h2 id="sim-h"></h2>
+    <div class="sim-top"><select id="sim-pt"></select><select id="sim-dia"></select></div>
+    <div class="chat" id="chat"></div>
+    <div class="qc" id="qc"></div>
+    <form class="send" id="send"><input id="msg" autocomplete="off"><button class="btn primary" id="sendbtn"></button></form>
+    <div class="sim-top" style="border-top:1px solid var(--line);border-bottom:0"><button class="btn" id="startci"></button><button class="btn" id="tick"></button></div>
+    <div class="hint" id="simhint"></div>
+  </section>
+</main>
+<dialog id="keydlg"><form method="dialog"><b id="k-t"></b><input id="keyin" type="password" autocomplete="off"><button class="btn primary" id="k-ok"></button></form></dialog>
+
+<script>
+const I18N = {
+ ar:{tag:"متابعة الأمراض المزمنة بالعربية",alerts:"التنبيهات",patients:"المرضى",open:"مفتوح",all:"الكل",urgent:"عاجل",watch:"مراقبة",normal:"طبيعي",
+  k_urgent:"عاجل مفتوح",k_watch:"مراقبة مفتوحة",k_adh:"الالتزام بالدواء (٧ أيام)",k_rate:"إكمال المتابعة (٧ أيام)",k_ack:"زمن الاستجابة للعاجل (د)",
+  ack:"استلمت",resolve:"تم الحل",ackedby:"استلمها",noalerts:"لا توجد تنبيهات مفتوحة 🎉",select:"اختر مريضًا من القائمة لعرض التفاصيل",
+  glucose:"السكر (ملغ/دل)",bp:"ضغط الدم",adherence:"الالتزام بالدواء",lastcheck:"آخر المتابعات",alertsh:"التنبيهات",transcript:"المحادثة",
+  date:"التاريخ",symp:"الأعراض",meds:"الدواء",yes:"أخذ",no:"لم يأخذ",none:"—",sim:"محاكي المريض (واتساب)",send:"إرسال",startci:"ابدأ المتابعة",tick:"تشغيل المجدول",
+  msgph:"اكتب كأنك المريض…",hint:"المحاكي لا يرسل رسائل حقيقية. استخدم الردود السريعة أو اكتب بالعربية أو الأرابيزي أو أرقام مثل ١٢٠.",
+  keyt:"مفتاح لوحة التحكم",keyok:"دخول",target:"النطاق المستهدف",consent:"بلا موافقة",ago:"قبل",min:"د",hr:"س",d:"ي",now:"الآن",rules:"قواعد",
+  src:"المصدر",never:"لا يوجد بيانات",conds:{diabetes:"سكري",hypertension:"ضغط"},st:{idle:"متاح",awaiting_consent:"بانتظار الموافقة"}, pdis:"العمر"},
+ en:{tag:"Arabic chronic-disease monitoring",alerts:"Alerts",patients:"Patients",open:"Open",all:"All",urgent:"Urgent",watch:"Watch",normal:"Normal",
+  k_urgent:"Open urgent",k_watch:"Open watch",k_adh:"Medication adherence (7d)",k_rate:"Check-in completion (7d)",k_ack:"Urgent response time (min)",
+  ack:"Acknowledge",resolve:"Resolve",ackedby:"Acknowledged by",noalerts:"No open alerts 🎉",select:"Select a patient to see details",
+  glucose:"Glucose (mg/dL)",bp:"Blood pressure",adherence:"Medication adherence",lastcheck:"Recent check-ins",alertsh:"Alerts",transcript:"Conversation",
+  date:"Date",symp:"Symptoms",meds:"Meds",yes:"Taken",no:"Missed",none:"—",sim:"Patient simulator (WhatsApp)",send:"Send",startci:"Start check-in",tick:"Run scheduler",
+  msgph:"Type as the patient…",hint:"The simulator never sends real messages. Use the quick replies or type Arabic, Arabizi, or digits like ١٢٠.",
+  keyt:"Dashboard key",keyok:"Sign in",target:"Target range",consent:"no consent",ago:"",min:"m",hr:"h",d:"d",now:"now",rules:"Rules",
+  src:"Source",never:"No data",conds:{diabetes:"Diabetes",hypertension:"Hypertension"},st:{idle:"idle",awaiting_consent:"awaiting consent"}}
+};
+const CHIPS = ["سكري 118","سكري 6.5","ضغطي 150/95","ضغطي 12 على 8","لا","دوخة وصداع","وجع في صدري","ايوه","ما اخذت","aywa"];
+let lang = (()=>{try{return sessionStorage.getItem("lang")||"ar"}catch(e){return "ar"}})();
+let key = (()=>{try{return sessionStorage.getItem("key")||""}catch(e){return ""}})();
+let tab="alerts", filter="open", selected=null, lastMsgId=0, cfg={dialects:{}}, patients=[], seenAlerts=new Set();
+const $ = id => document.getElementById(id), t = k => I18N[lang][k] ?? k;
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nf = n => (n==null?"—":Number(n).toLocaleString(lang==="ar"?"ar-EG":"en"));
+const sym = c => (cfg.symptoms&&cfg.symptoms[c]?cfg.symptoms[c][lang==="ar"?1:0]:c);
+const lvlName = l => [t("normal"),t("watch"),t("urgent")][l];
+
+async function api(path, opts={}){
+  const r = await fetch(path,{...opts,headers:{"Content-Type":"application/json","X-API-Key":key,...(opts.headers||{})}});
+  if(r.status===401){ await askKey(); return api(path,opts); }
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+function askKey(){ return new Promise(res=>{ const d=$("keydlg"); $("k-t").textContent=t("keyt"); $("k-ok").textContent=t("keyok");
+  d.onclose=()=>{key=$("keyin").value; try{sessionStorage.setItem("key",key)}catch(e){} res()}; d.showModal(); }); }
+
+function ago(iso){ if(!iso) return ""; const s=(Date.now()-new Date(iso+"Z"))/1000;
+  const u = s<60?t("now"): s<3600? nf(Math.round(s/60))+t("min") : s<86400? nf(Math.round(s/3600))+t("hr") : nf(Math.round(s/86400))+t("d");
+  return lang==="ar" && s>=60 ? t("ago")+" "+u : u + (lang==="en"&&s>=60?" ago":""); }
+
+function applyLang(){
+  document.documentElement.lang=lang; document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+  $("lang").textContent = lang==="ar"?"EN":"ع"; $("tag").textContent=t("tag");
+  $("t-alerts").textContent=t("alerts"); $("t-pts").textContent=t("patients");
+  $("sim-h").textContent=t("sim"); $("sendbtn").textContent=t("send"); $("startci").textContent=t("startci"); $("tick").textContent=t("tick");
+  $("msg").placeholder=t("msgph"); $("simhint").textContent=t("hint");
+  $("qc").innerHTML = CHIPS.map(c=>`<button type="button" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+}
+
+async function loadOverview(){
+  const o = await api("/api/overview");
+  const k = (cls,v,l)=>`<div class="kpi ${cls}"><b class="num">${v}</b><small>${l}</small></div>`;
+  $("kpis").innerHTML = k("urgent",nf(o.open_urgent),t("k_urgent"))+k("",nf(o.open_watch),t("k_watch"))+
+    k("",o.adherence_7d==null?"—":nf(o.adherence_7d)+"%",t("k_adh"))+k("",nf(o.checkin_rate_7d)+"%",t("k_rate"))+k("",o.median_urgent_ack_min==null?"—":nf(o.median_urgent_ack_min),t("k_ack"));
+}
+
+async function loadLeft(){
+  if(tab==="alerts"){
+    const list = await api("/api/alerts?status="+(filter==="open"?"open":"all"));
+    const bar = `<div style="display:flex;gap:6px"><button class="btn ${filter==="open"?"primary":""}" data-f="open">${t("open")}</button><button class="btn ${filter==="all"?"primary":""}" data-f="all">${t("all")}</button></div>`;
+    const cards = list.map(a=>{
+      const fresh = !seenAlerts.has(a.id) && seenAlerts.size>0 && a.level===2; seenAlerts.add(a.id);
+      const body = lang==="ar"?a.summary_ar:a.summary_en;
+      const [head,...rest] = body.split("\n");
+      return `<article class="tag l${a.level} ${a.status!=="open"?"done":""} ${selected===a.patient_id?"sel":""} ${fresh?"fresh":""}" data-p="${a.patient_id}">
+        <h3><span>${esc(a.patient_name)}</span><span class="lvl">${lvlName(a.level)}</span><time>${ago(a.created_at)}</time></h3>
+        <pre>${esc(rest.join("\n"))}</pre>
+        ${a.status==="open"?`<div class="acts"><button class="primary" data-ack="${a.id}">${t("ack")}</button><button data-res="${a.id}">${t("resolve")}</button></div>`
+          :`<div class="note">${t("ackedby")}: ${esc(a.ack_by||"")} ${a.note?"· "+esc(a.note):""}</div>`}
+        <div class="note">${t("rules")} <bdi>${esc(a.rules_version)}</bdi></div></article>`; }).join("");
+    $("left").innerHTML = bar + (cards || `<div class="empty">${t("noalerts")}</div>`);
+  } else {
+    $("left").innerHTML = patients.map(p=>`<div class="row ${selected===p.id?"sel":""}" data-p="${p.id}">
+      <span class="dot l${p.open_level}"></span><div><b>${esc(p.name)}</b><div class="note">${p.conditions.map(c=>t("conds")[c]).join(" · ")}${p.consent?"":" · "+t("consent")}</div></div>
+      <div class="meta num">${p.last_glucose?nf(Math.round(p.last_glucose.value1))+" mg/dL<br>":""}${p.last_bp?nf(Math.round(p.last_bp.value1))+"/"+nf(Math.round(p.last_bp.value2)):""}</div></div>`).join("");
+  }
+}
+
+function lineChart(series, {band, yMin, yMax, W=420, H=170}){
+  const P={l:34,r:8,t:8,b:20}, all=series.flatMap(s=>s.pts);
+  if(!all.length) return `<div class="note">${t("never")}</div>`;
+  const t0=Math.min(...all.map(p=>p.t)), t1=Math.max(...all.map(p=>p.t))||t0+1;
+  const X=x=>P.l+(t1===t0?.5:(x-t0)/(t1-t0))*(W-P.l-P.r), Y=y=>P.t+(1-(y-yMin)/(yMax-yMin))*(H-P.t-P.b);
+  let g="";
+  if(band) g+=`<rect x="${P.l}" y="${Y(band[1])}" width="${W-P.l-P.r}" height="${Y(band[0])-Y(band[1])}" fill="var(--green-soft)"><title>${t("target")} ${band[0]}–${band[1]}</title></rect>`;
+  for(let i=0;i<=3;i++){ const v=yMin+(yMax-yMin)*i/3, y=Y(v); g+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="${P.l-5}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--muted)">${Math.round(v)}</text>`; }
+  const fmt=d=>new Date(d).toLocaleDateString(lang==="ar"?"ar-EG":"en",{month:"short",day:"numeric"});
+  g+=`<text x="${P.l}" y="${H-5}" font-size="10" fill="var(--muted)">${fmt(t0)}</text><text x="${W-P.r}" y="${H-5}" font-size="10" text-anchor="end" fill="var(--muted)">${fmt(t1)}</text>`;
+  const col=l=>l===2?"var(--red)":l===1?"var(--amber)":"var(--green)";
+  series.forEach(s=>{
+    g+=`<polyline fill="none" stroke="${s.color}" stroke-width="1.6" stroke-dasharray="${s.dash||""}" points="${s.pts.map(p=>X(p.t)+","+Y(p.v)).join(" ")}"/>`;
+    s.pts.forEach(p=>g+=`<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="3.6" fill="${s.dash?"var(--surface)":col(p.l)}" stroke="${s.dash?s.color:"var(--surface)"}" stroke-width="1.2"><title>${p.v} · ${fmt(p.t)}</title></circle>`);
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+
+async function loadDetail(){
+  if(!selected){ $("detail").innerHTML=`<div class="empty">${t("select")}</div>`; return; }
+  const d = await api("/api/patients/"+selected), p=d.patient;
+  const ts = r=>new Date(r.taken_at+"Z").getTime();
+  const gl = d.readings.filter(r=>r.kind==="glucose").map(r=>({t:ts(r),v:Math.round(r.value1),l:r.level}));
+  const sys = d.readings.filter(r=>r.kind==="bp").map(r=>({t:ts(r),v:Math.round(r.value1),l:r.level}));
+  const dia = d.readings.filter(r=>r.kind==="bp").map(r=>({t:ts(r),v:Math.round(r.value2),l:r.level}));
+  const lastG=gl.at(-1), lastB=d.readings.filter(r=>r.kind==="bp").at(-1);
+  const strip = d.checkins.slice(0,14).reverse().map(c=>`<i class="${c.meds_taken===1?"y":c.meds_taken===0?"n":""}" title="${c.local_date}"></i>`).join("");
+  $("detail").innerHTML = `
+   <div class="phead"><h1>${esc(p.name)}</h1><div class="chips">${p.conditions.map(c=>`<span class="chip">${t("conds")[c]}</span>`).join("")}
+     <span class="chip">${esc(cfg.dialects[p.dialect]||p.dialect)}</span><span class="chip">${esc(p.country)}</span>${p.consent?"":`<span class="chip" style="background:var(--amber-soft);color:#8A5A00">${t("consent")}</span>`}</div></div>
+   <div class="grid2">
+    ${p.conditions.includes("diabetes")?`<div class="card"><h4><span>${t("glucose")}</span><span class="big num" style="font-size:20px">${lastG?lastG.v:"—"}</span></h4>${lineChart([{pts:gl,color:"var(--petrol)"}],{band:[70,130],yMin:40,yMax:Math.max(250,...gl.map(x=>x.v+10))})}</div>`:""}
+    ${p.conditions.includes("hypertension")?`<div class="card"><h4><span>${t("bp")}</span><span class="big num" style="font-size:20px">${lastB?Math.round(lastB.value1)+"/"+Math.round(lastB.value2):"—"}</span></h4>${lineChart([{pts:sys,color:"var(--petrol)"},{pts:dia,color:"var(--muted)",dash:"4 3"}],{band:[90,139],yMin:50,yMax:Math.max(190,...sys.map(x=>x.v+10))})}</div>`:""}
+    <div class="card"><h4><span>${t("adherence")}</span><span class="big num" style="font-size:20px">${d.adherence_pct==null?"—":nf(d.adherence_pct)+"%"}</span></h4><div class="strip">${strip}</div>
+      <div class="note">${d.medications.map(m=>"<bdi>"+esc(m.name)+" "+esc(m.dose||"")+"</bdi> · "+m.times.join(", ")).join("<br>")}</div></div>
+   </div>
+   <section><h4>${t("lastcheck")}</h4><table><tr><th>${t("date")}</th><th>${t("symp")}</th><th>${t("meds")}</th><th></th></tr>
+    ${d.checkins.slice(0,7).map(c=>`<tr><td class="num">${c.local_date}</td><td>${esc(c.symptoms.map(sym).join(", ")||t("none"))}${c.free_text?`<div class="note">“${esc(c.free_text)}”</div>`:""}</td>
+      <td>${c.meds_taken==null?t("none"):c.meds_taken?t("yes"):t("no")}</td><td><span class="dot l${c.level}" style="display:inline-block"></span></td></tr>`).join("")}</table></section>`;
+}
+
+/* simulator */
+function bubble(m){ const cls = m.direction==="in"?"in":m.direction==="out"?"out":"clin";
+  const time=new Date(m.created_at+"Z").toLocaleTimeString(lang==="ar"?"ar-EG":"en",{hour:"2-digit",minute:"2-digit"});
+  return `<div class="b ${cls}">${esc(m.body)}<time>${time}</time></div>`; }
+async function loadChat(reset){
+  if(!selected){ $("chat").innerHTML=""; return; }
+  if(reset){ lastMsgId=0; $("chat").innerHTML=""; }
+  const ms = await api(`/api/patients/${selected}/messages?after=${lastMsgId}`);
+  if(!ms.length) return;
+  $("chat").insertAdjacentHTML("beforeend", ms.map(bubble).join("")); lastMsgId = ms.at(-1).id;
+  $("chat").scrollTop = $("chat").scrollHeight;
+}
+function fillSim(){
+  $("sim-pt").innerHTML = patients.map(p=>`<option value="${p.id}" ${p.id===selected?"selected":""}>${esc(p.name)}</option>`).join("");
+  $("sim-dia").innerHTML = Object.entries(cfg.dialects).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
+  const p = patients.find(x=>x.id===selected); if(p) $("sim-dia").value = p.dialect;
+}
+async function select(id){ selected=id; fillSim(); await Promise.all([loadDetail(), loadLeft(), loadChat(true)]); }
+async function refreshAll(){ patients = await api("/api/patients"); await Promise.all([loadOverview(), loadLeft(), selected?loadDetail():0]); fillSim(); }
+
+document.addEventListener("click", async e=>{
+  const b = e.target.closest("button,[data-p]"); if(!b) return;
+  if(b.dataset.ack){ e.stopPropagation(); await api(`/api/alerts/${b.dataset.ack}/ack`,{method:"POST",body:JSON.stringify({note:""})}); return refreshAll(); }
+  if(b.dataset.res){ e.stopPropagation(); await api(`/api/alerts/${b.dataset.res}/resolve`,{method:"POST",body:JSON.stringify({note:""})}); return refreshAll(); }
+  if(b.dataset.f){ filter=b.dataset.f; return loadLeft(); }
+  if(b.dataset.c){ $("msg").value=b.dataset.c; return $("send").requestSubmit(); }
+  if(b.dataset.p) return select(+b.dataset.p);
+});
+$("t-alerts").onclick=()=>{tab="alerts";$("t-alerts").setAttribute("aria-selected",true);$("t-pts").setAttribute("aria-selected",false);loadLeft()};
+$("t-pts").onclick=()=>{tab="pts";$("t-pts").setAttribute("aria-selected",true);$("t-alerts").setAttribute("aria-selected",false);loadLeft()};
+$("lang").onclick=()=>{lang=lang==="ar"?"en":"ar"; try{sessionStorage.setItem("lang",lang)}catch(e){} applyLang(); refreshAll(); loadChat(true)};
+$("sim-pt").onchange=e=>select(+e.target.value);
+$("sim-dia").onchange=async e=>{ if(!selected) return; await api("/api/patients/"+selected,{method:"PATCH",body:JSON.stringify({dialect:e.target.value})}); await refreshAll(); };
+$("send").onsubmit=async e=>{ e.preventDefault(); const v=$("msg").value.trim(); if(!v||!selected) return; $("msg").value="";
+  await api("/api/sim/send",{method:"POST",body:JSON.stringify({patient_id:selected,text:v})}); await loadChat(); await refreshAll(); };
+$("startci").onclick=async()=>{ if(!selected) return; await api(`/api/patients/${selected}/start-checkin?simulate=true`,{method:"POST"}); loadChat(); };
+$("tick").onclick=async()=>{ await api("/api/sim/tick",{method:"POST",body:"{}"}); loadChat(); refreshAll(); };
+
+(async function init(){
+  applyLang();
+  cfg = await api("/api/config"); $("chan").textContent = cfg.channel==="whatsapp"?"WhatsApp live":"simulator";
+  await refreshAll();
+  const first = patients.find(p=>p.open_level===2) || patients[0]; if(first) await select(first.id);
+  setInterval(()=>{ if(!document.hidden) loadChat(); }, 2500);
+  setInterval(()=>{ if(!document.hidden) refreshAll(); }, 15000);
+})();
+</script>
+</body>
+</html>
