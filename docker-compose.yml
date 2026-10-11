@@ -1,8 +1,0 @@
-services:
-  rafiq:
-    build: .
-    ports: ["8000:8000"]
-    env_file: .env
-    volumes: ["rafiq-data:/data"]
-volumes:
-  rafiq-data:
