@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>رفيق · Rafiq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/common.css">
+<script src="/static/common.js"></script>
+<style>
+.sos{background:var(--red-soft);color:var(--red);padding:8px 20px;font-size:13.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sos b{font:600 15px var(--display)}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 40px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}.chatcol{order:-1}}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hello h1{margin:0 0 4px;font:600 22px var(--display)}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 12px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border-radius:99px;font-weight:600;font-size:13px}
+.pill i{width:9px;height:9px;border-radius:50%;background:currentColor}
+.pill.l0{background:var(--green-soft);color:var(--green)} .pill.l1{background:var(--amber-soft);color:var(--amber-ink)} .pill.l2{background:var(--red-soft);color:var(--red)} .pill.lx{background:var(--petrol-soft);color:var(--muted)}
+.read{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.read .big small{font-size:13px;color:var(--muted);font-weight:400}
+.med{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)} .med:last-child{border:0}
+.chat{display:flex;flex-direction:column;height:min(70vh,640px);padding:0;overflow:hidden}
+.chat>h4{margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
+.msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--petrol-soft);min-height:0}
+.b{max-width:88%;padding:7px 11px;border-radius:12px;white-space:pre-wrap;word-break:break-word;unicode-bidi:plaintext;box-shadow:var(--shadow)}
+.b.out{align-self:flex-start;background:var(--bubble-out);border-end-start-radius:3px}
+.b.in{align-self:flex-end;background:var(--bubble-in);border-end-end-radius:3px}
+.b time{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.qc{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px 0}
+.qc button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:3px 12px}
+.send{display:flex;gap:6px;padding:10px}
+.send input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--input);unicode-bidi:plaintext}
+.row2s{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.steps{display:flex;gap:0;margin:10px 0 4px}
+.steps div{flex:1;text-align:center;font-size:11.5px;color:var(--muted);position:relative;padding-top:20px}
+.steps div::before{content:"";position:absolute;inset-block-start:4px;inset-inline:0;height:3px;background:var(--line)}
+.steps div::after{content:"";position:absolute;inset-block-start:0;inset-inline-start:50%;margin-inline-start:-6px;width:12px;height:12px;border-radius:50%;background:var(--line);border:2px solid var(--surface)}
+.steps div.on{color:var(--ink)} .steps div.on::before,.steps div.on::after{background:var(--petrol)}
+.guide ul,.guide ol{margin:6px 0 10px;padding-inline-start:20px} .guide li{margin:3px 0}
+.guide .callout{background:var(--petrol-soft);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:8px}
+.guide .urgent{background:var(--red-soft);color:var(--red);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:8px}
+.banner2{background:var(--amber-soft);color:var(--amber-ink);padding:9px 12px;border-radius:10px;margin:8px 0;font-size:13.5px}
+.danger-zone{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><b>رفيق</b><span id="tag"></span></div>
+  <div class="ctl"><span class="who" id="who"></span><button class="icon-btn" id="theme" type="button"></button><button class="btn" id="lang" type="button"></button>
+    <button class="btn" id="pw" type="button"></button><button class="btn" id="logout" type="button"></button></div>
+</header>
+<div class="sos" id="sos"></div>
+<div class="wrap">
+  <div class="stack" id="left"></div>
+  <div class="stack chatcol">
+    <section class="card chat">
+      <h4 id="chat-h"></h4>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="qc" id="qc"></div>
+      <form class="send" id="send"><input id="m" autocomplete="off" dir="auto"><button class="btn primary" id="sb"></button></form>
+    </section>
+  </div>
+</div>
+<script>
+const R = window.RAFIQ, $ = (i) => document.getElementById(i), esc = R.esc;
+const L = {
+  ar: { tag: "بوابتي", hello: "أهلًا", sosT: "في حالة طارئة (ألم صدر، ضيق نفس، إغماء) اتصلي بالإسعاف على", sosB: "إن لاحظتِ كتلة أو تغيّرًا في الثدي فلا تنتظري: راجعي العيادة.",
+    start: "ابدأ المتابعة", startIntake: "أكملي ملفك الصحي (دقيقتان)", introBanner: "لنُكمل أسئلة قصيرة في المحادثة حتى نخصّص لك خطة الفحص.", last: "آخر متابعة", doctor: "طبيبك",
+    scrH: "فحص الماموغرام", lastm: "آخر ماموغرام", nextd: "الموعد القادم", plan: "سيضع لك الطبيب خطة فحص خاصة بك.",
+    scr: { unknown: "أكملي أسئلة الملف الصحي في المحادثة", not_yet: "لا يلزمك ماموغرام دوري الآن. المهم أن تعرفي شكل ثدييك الطبيعي", up_to_date: "فحصك محدّث ✔", due_soon: "موعد فحصك قريب", due: "حان موعد فحصك. احجزي في العيادة", overdue: "تأخر موعد فحصك. احجزي في أقرب وقت", specialist_plan: "طبيبك سيضع لك خطة فحص خاصة", individualised: "يحدد طبيبك الفحص حسب حالتك", referred: "طبيبك يتابع نتيجة فحصك، وستتواصل معك العيادة" },
+    refH: "متابعة زيارتك للعيادة", steps: ["استلمنا طلبك", "تواصلت العيادة", "حُجز الموعد", "تمت المعاينة"], appt: "موعدك", refNew: "العيادة ستتصل بك قريبًا. إن لم يتصلوا خلال يومين فاتصلي بهم.", refBooked: "نتمنى أن تحضري الموعد؛ هو مهم.",
+    gH: "اعرفي ثدييك", look: "ما الذي تبحثين عنه", lookL: ["كتلة أو سماكة جديدة في الثدي أو تحت الإبط", "تغيّر في حجم الثدي أو شكله", "تجعّد أو غمازة أو احمرار أو تقشّر في الجلد", "انسحاب الحلمة إلى الداخل أو إفرازات منها (خاصة الدموية)", "ألم مستمر في مكان واحد"],
+    how: "كيف تفحصين", howL: ["مرة كل شهر وفي وقت ثابت (مثلًا بعد انتهاء الدورة بأيام).", "انظري في المرآة: الحجم والشكل والجلد والحلمة.", "تحسّسي كل ثدي وتحت الإبط بحركات دائرية بأطراف الأصابع.", "أخبري رفيق أو عيادتك فورًا عن أي تغيير."],
+    note: "معظم تغيرات الثدي ليست سرطانًا، لكن الاكتشاف المبكر يرفع فرص العلاج كثيرًا. الفحص الذاتي لا يغني عن الماموغرام.", urgent: "احمرار وسخونة وألم شديد في الثدي مع حرارة يحتاج إلى فحص في اليوم نفسه.",
+    glucose: "السكر", bp: "ضغط الدم", trend: "آخر ٣٠ يومًا", noReading: "لا قراءات بعد", inRange: ["ضمن هدفك", "خارج هدفك، سيتابعها طبيبك", "تواصلي مع طبيبك الآن"], meds: "أدويتي", target: "الهدف",
+    chat: "تحدثي مع رفيق", send: "إرسال", ph: "اكتبي هنا…", settings: "تفضيلاتي وبياناتي", dialect: "اللغة / اللهجة", gender: "الجنس", male: "ذكر", female: "أنثى", save: "حفظ", saved: "تم الحفظ",
+    export: "تنزيل بياناتي", del: "حذف حسابي", delT: "حذف الحساب نهائيًا", delTxt: "سيُحذف حسابك وكل بياناتك وسجلاتك ولا يمكن التراجع. اكتبي كلمة المرور ثم DELETE للتأكيد.", pw: "كلمة المرور", cancel: "إلغاء", confirmDel: "احذف نهائيًا",
+    chips: ["ابدأ", "نعم", "لا"], consent: "للبدء اكتبي «نعم» في المحادثة للموافقة على المتابعة." },
+  en: { tag: "My page", hello: "Hello", sosT: "In an emergency (chest pain, trouble breathing, fainting) call the ambulance on", sosB: "If you notice a breast lump or change, don't wait: contact your clinic.",
+    start: "Start check-in", startIntake: "Finish your health profile (2 minutes)", introBanner: "Let's finish a few short questions in the chat so we can personalise your screening plan.", last: "Last check-in", doctor: "Your clinician",
+    scrH: "Mammogram screening", lastm: "Last mammogram", nextd: "Next due", plan: "Your clinician will set a personalised screening plan for you.",
+    scr: { unknown: "Finish your health-profile questions in the chat", not_yet: "You don't need routine mammograms yet. What matters is knowing how your breasts normally look and feel", up_to_date: "Your screening is up to date ✔", due_soon: "Your screening is due soon", due: "Your screening is due. Please book at your clinic", overdue: "Your screening is overdue. Please book as soon as you can", specialist_plan: "Your clinician will set a personal screening plan", individualised: "Your clinician decides screening based on your situation", referred: "Your clinician is following up your result; the clinic will contact you" },
+    refH: "Your clinic visit", steps: ["Request received", "Clinic in touch", "Appointment booked", "Seen"], appt: "Your appointment", refNew: "The clinic will contact you soon. If you haven't heard in 2 days, please call them.", refBooked: "Please make it to your appointment; it matters.",
+    gH: "Know your breasts", look: "What to look for", lookL: ["A new lump or thickening in the breast or underarm", "A change in breast size or shape", "Skin dimpling, puckering, redness or scaling", "Nipple turning inward, or discharge (especially bloody)", "Persistent pain in one spot"],
+    how: "How to check", howL: ["Once a month, at the same time (for example a few days after your period ends).", "Look in a mirror: size, shape, skin, nipple.", "Feel each breast and underarm with circular movements of your fingertips.", "Tell Rafiq or your clinic straight away about any change."],
+    note: "Most breast changes are not cancer, but finding cancer early greatly improves treatment. Self-checks don't replace mammograms.", urgent: "A red, warm, very painful breast with fever needs to be seen the same day.",
+    glucose: "Glucose", bp: "Blood pressure", trend: "Last 30 days", noReading: "No readings yet", inRange: ["Within your target", "Outside your target; your doctor will follow up", "Contact your doctor now"], meds: "My medications", target: "Target",
+    chat: "Chat with Rafiq", send: "Send", ph: "Type here…", settings: "My preferences and data", dialect: "Language / dialect", gender: "Gender", male: "Male", female: "Female", save: "Save", saved: "Saved",
+    export: "Download my data", del: "Delete my account", delT: "Delete account permanently", delTxt: "Your account, data and records will be deleted and this can't be undone. Enter your password and type DELETE to confirm.", pw: "Password", cancel: "Cancel", confirmDel: "Delete permanently",
+    chips: ["start", "yes", "no"], consent: "To begin, type “yes” in the chat to consent to follow-up." },
+};
+const t = (k) => L[R.lang][k];
+let D = null, lastId = 0;
+const fmtD = (d) => (d ? new Date(d.length <= 10 ? d + "T12:00:00" : d + "Z").toLocaleDateString(R.lang === "ar" ? "ar-EG" : "en", { day: "numeric", month: "long", year: "numeric" }) : "—");
+const cls = (s) => ({ up_to_date: "l0", due_soon: "l1", due: "l1", overdue: "l2", referred: "l2", specialist_plan: "l1" }[s] || "lx");
+
+function draw() {
+  if (!D) return;
+  const p = D.profile, b = D.breast, lc = D.last_checkin;
+  $("tag").textContent = t("tag"); $("chat-h").textContent = t("chat"); $("sb").textContent = t("send"); $("m").placeholder = t("ph");
+  $("sos").innerHTML = `<b>⚠</b> ${t("sosT")} <b class="num" dir="ltr">${esc(p.emergency_number)}</b> · ${t("sosB")}`;
+  $("qc").innerHTML = t("chips").map((c) => `<button type="button" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  const ts = (r) => new Date(r.taken_at + "Z").getTime();
+  const gl = D.readings.filter((r) => r.kind === "glucose").map((r) => ({ t: ts(r), v: Math.round(r.value1), l: r.level }));
+  const bpr = D.readings.filter((r) => r.kind === "bp"), sys = bpr.map((r) => ({ t: ts(r), v: Math.round(r.value1), l: r.level })), dia = bpr.map((r) => ({ t: ts(r), v: Math.round(r.value2), l: r.level }));
+  const lg = D.readings.filter((r) => r.kind === "glucose").at(-1), lb = bpr.at(-1);
+  const strip = D.checkins.filter((c) => c.kind !== "breast").slice(0, 14).reverse().map((c) => `<i class="${c.meds_taken === 1 ? "y" : c.meds_taken === 0 ? "n" : ""}" title="${c.local_date}"></i>`).join("");
+  const readCard = (title, last, val, unit, chart) => `<section class="card"><h4><span>${title}</span><span class="note">${t("trend")}</span></h4>
+    ${last ? `<div class="read"><div class="big num">${val}<small> ${unit}</small></div><span class="pill l${last.level}"><i></i>${t("inRange")[last.level]}</span></div>` : `<div class="note">${t("noReading")}</div>`}${chart}</section>`;
+
+  let html = `<section class="card hello"><h1>${t("hello")} ${esc(p.name)}</h1>
+      ${p.consent ? "" : `<div class="banner2">${t("consent")}</div>`}
+      ${b && !b.intake_done ? `<div class="banner2">${t("introBanner")}</div>` : ""}
+      <div class="note">${lc ? t("last") + ": " + R.ago(lc.created_at) : ""} ${p.doctor ? "· " + t("doctor") + ": " + esc(p.doctor) : ""}</div>
+      <div style="margin-top:12px"><button class="btn primary" id="startci" type="button">${b && !b.intake_done ? t("startIntake") : t("start")}</button></div></section>`;
+
+  if (b) {
+    html += `<section class="card"><h4><span>${t("scrH")}</span></h4><div class="status"><span class="pill ${cls(b.screening_status)}"><i></i>${t("scr")[b.screening_status] || ""}</span></div>
+      <div class="note">${b.last_mammogram ? t("lastm") + ": " + fmtD(b.last_mammogram) : ""} ${b.next_screening_due ? " · " + t("nextd") + ": " + fmtD(b.next_screening_due) : ""}</div>
+      ${b.personalised_plan ? `<div class="note" style="margin-top:6px">${t("plan")}</div>` : ""}</section>`;
+    if (b.open_referrals.length) {
+      const r = b.open_referrals[0], idx = { new: 0, contacted: 1, booked: 2 }[r.status] ?? 0;
+      html += `<section class="card"><h4><span>${t("refH")}</span></h4><div class="steps">${t("steps").map((s, i) => `<div class="${i <= idx ? "on" : ""}">${s}</div>`).join("")}</div>
+        ${r.appointment_date ? `<div class="status"><b>${t("appt")}:</b> <span class="num">${fmtD(r.appointment_date)}</span></div><div class="note">${t("refBooked")}</div>` : `<div class="note">${t("refNew")}</div>`}</section>`;
+    }
+    html += `<section class="card guide"><h4><span>${t("gH")}</span></h4><b>${t("look")}</b><ul>${t("lookL").map((x) => `<li>${x}</li>`).join("")}</ul>
+      <b>${t("how")}</b><ol>${t("howL").map((x) => `<li>${x}</li>`).join("")}</ol><div class="callout">${t("note")}</div><div class="urgent">${t("urgent")}</div></section>`;
+  }
+  if (p.conditions.includes("diabetes")) html += readCard(t("glucose"), lg, lg ? Math.round(lg.value1) : "", "mg/dL", R.lineChart([{ pts: gl, color: "var(--petrol)" }], { band: [70, 130], yMin: 40, yMax: Math.max(250, ...gl.map((x) => x.v + 10)), targetLabel: t("target"), noData: "" }));
+  if (p.conditions.includes("hypertension")) html += readCard(t("bp"), lb, lb ? Math.round(lb.value1) + "/" + Math.round(lb.value2) : "", "mmHg", R.lineChart([{ pts: sys, color: "var(--petrol)" }, { pts: dia, color: "var(--muted)", dash: "4 3" }], { band: [90, 139], yMin: 50, yMax: Math.max(190, ...sys.map((x) => x.v + 10)), targetLabel: t("target"), noData: "" }));
+  if (D.medications.length) html += `<section class="card"><h4><span>${t("meds")}</span><span class="big num" style="font-size:18px">${D.adherence_pct == null ? "" : R.nf(D.adherence_pct) + "%"}</span></h4>
+      ${D.medications.map((m) => `<div class="med"><span dir="auto">${esc(m.name)} ${esc(m.dose || "")}</span><span class="num" dir="ltr">${m.times.join(" · ")}</span></div>`).join("")}<div class="strip">${strip}</div></section>`;
+  html += `<section class="card"><h4>${t("settings")}</h4><div class="row2s">
+      <label class="field"><span>${t("dialect")}</span><select id="s-d">${Object.entries(D.dialects).map(([k, v]) => `<option value="${k}" ${k === p.dialect ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></label>
+      <label class="field"><span>${t("gender")}</span><select id="s-g"><option value="f" ${p.gender === "f" ? "selected" : ""}>${t("female")}</option><option value="m" ${p.gender === "m" ? "selected" : ""}>${t("male")}</option></select></label></div>
+      <button class="btn" id="s-save" type="button">${t("save")}</button>
+      <div class="danger-zone"><a class="btn" href="/api/me/export" download>${t("export")}</a><button class="btn danger" id="s-del" type="button">${t("del")}</button></div></section>`;
+  $("left").innerHTML = html;
+  $("startci").onclick = () => say(R.lang === "en" || p.dialect === "en" ? "start" : "ابدأ");
+  $("s-save").onclick = async () => { await R.patch("/api/me/preferences", { dialect: $("s-d").value, gender: $("s-g").value }); R.toast(t("saved")); load(); };
+  $("s-del").onclick = deleteDialog;
+}
+function deleteDialog() {
+  const d = document.createElement("dialog");
+  d.innerHTML = `<form id="df"><h3>${t("delT")}</h3><p>${t("delTxt")}</p><label class="field"><span>${t("pw")}</span><input id="d-p" type="password" required dir="ltr" autocomplete="current-password"></label>
+    <label class="field"><span>DELETE</span><input id="d-c" required dir="ltr" autocomplete="off"></label><div class="err" id="d-e"></div>
+    <div class="dlg-actions"><button type="button" class="btn" id="d-x">${t("cancel")}</button><button class="btn danger">${t("confirmDel")}</button></div></form>`;
+  document.body.appendChild(d); d.showModal();
+  d.querySelector("#d-x").onclick = () => { d.close(); d.remove(); };
+  d.querySelector("#df").onsubmit = async (e) => { e.preventDefault();
+    try { await R.post("/api/me/delete-account", { password: d.querySelector("#d-p").value, confirm: d.querySelector("#d-c").value }); location.href = "/login"; }
+    catch (err) { d.querySelector("#d-e").textContent = err.message; } };
+}
+function bubble(m) {
+  const time = new Date(m.created_at + "Z").toLocaleTimeString(R.lang === "ar" ? "ar-EG" : "en", { hour: "2-digit", minute: "2-digit" });
+  return `<div class="b ${m.direction === "in" ? "in" : "out"}">${esc(m.body)}<time>${time}</time></div>`;
+}
+async function pull() {
+  const ms = await R.api("/api/me/messages?after=" + lastId);
+  if (!ms.length) return false;
+  $("msgs").insertAdjacentHTML("beforeend", ms.map(bubble).join("")); lastId = ms.at(-1).id; $("msgs").scrollTop = $("msgs").scrollHeight; return true;
+}
+async function say(text) {
+  if (!text.trim()) return;
+  $("sb").disabled = true;
+  try { await R.post("/api/me/chat", { text }); await pull(); await load(); } catch (e) { R.toast(e.message); } finally { $("sb").disabled = false; }
+}
+async function load() { D = await R.api("/api/me/summary"); draw(); }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-c]"); if (b) say(b.dataset.c); });
+$("send").onsubmit = (e) => { e.preventDefault(); const v = $("m").value; $("m").value = ""; say(v); };
+(async function init() {
+  R.chrome({ onLang: draw });
+  const me = await R.api("/api/auth/me");
+  R.chrome({ who: me.display_name, onLang: draw });
+  await load(); await pull();
+  if (D.breast && !D.breast.intake_done && !$("msgs").children.length) say(D.profile.dialect === "en" ? "start" : "ابدأ");   // first visit: begin the profile questions
+  setInterval(() => { if (!document.hidden) pull(); }, 6000);
+})();
+</script>
+</body>
+</html>
