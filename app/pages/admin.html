@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>رفيق · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/common.css">
+<script src="/static/common.js"></script>
+<style>
+.wrap{max-width:1180px;margin:0 auto;padding:14px 20px 40px}
+.panel{margin-top:16px}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.bar h2{margin:0;font:600 18px var(--display);margin-inline-end:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat .big{margin-top:2px}
+.tbl{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.banner{padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:13px}
+.banner.warn{background:var(--amber-soft);color:var(--amber-ink)} .banner.bad{background:var(--red-soft);color:var(--red)} .banner.ok{background:var(--green-soft);color:var(--green)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.acts .btn{padding:3px 9px;font-size:12.5px}
+.kv td:first-child{color:var(--muted);width:55%}
+.topbar a.btn{text-decoration:none;color:inherit}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><b>رفيق</b><span id="tag"></span></div>
+  <div class="ctl"><span class="who" id="who"></span><a class="btn" id="dashlink" href="/dashboard"></a>
+    <button class="icon-btn" id="theme" type="button"></button><button class="btn" id="lang" type="button"></button>
+    <button class="btn" id="pw" type="button"></button><button class="btn" id="logout" type="button"></button></div>
+</header>
+<div class="wrap">
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="panel" id="panel"></div>
+</div>
+<script>
+const R = window.RAFIQ, $ = (i) => document.getElementById(i), esc = R.esc;
+const L = {
+  ar: { tag: "لوحة الإدارة", dash: "لوحة الأطباء", tabs: { system: "النظام", users: "المستخدمون", patients: "المرضى", clinicians: "الأطباء", audit: "سجل التدقيق", rules: "القواعد السريرية" },
+    db: "قاعدة البيانات", channel: "قناة الرسائل", sched: "المجدول", rulesv: "إصدار القواعد", on: "يعمل", off: "متوقف", patients: "المرضى", users: "المستخدمون", clin: "الأطباء", alerts: "تنبيهات مفتوحة", readings: "القراءات", msgs: "الرسائل",
+    demoWarn: "الوضع التجريبي مفعّل: بيانات وهمية وكلمات مرور معروفة. أوقفه (RAFIQ_DEMO_SEED=0) قبل أي استخدام حقيقي.", cookieWarn: "ملفات الجلسة ليست «Secure». فعّل RAFIQ_COOKIE_SECURE=1 خلف HTTPS.", sqlite: "تستخدم SQLite: مناسب للتجربة. للإنتاج استخدم PostgreSQL عبر DATABASE_URL.",
+    newUser: "+ مستخدم جديد", username: "اسم المستخدم", display: "الاسم الظاهر", role: "الدور", link: "مرتبط بـ", active: "نشط", last: "آخر دخول", actions: "إجراءات", reset: "إعادة تعيين كلمة المرور", disable: "تعطيل", enable: "تفعيل",
+    roles: { admin: "مدير", clinician: "طبيب", patient: "مريض" }, create: "إنشاء", cancel: "إلغاء", never: "لم يدخل بعد", resetDone: "كلمة المرور المؤقتة (تظهر مرة واحدة)", mustChange: "يجب تغييرها",
+    enroll: "+ تسجيل مريض", name: "الاسم", doctor: "الطبيب", conds: "الحالة", consent: "موافقة", hasLogin: "حساب دخول", yes: "نعم", no: "لا", mkLogin: "إنشاء حساب",
+    invite: "رمز العيادة", regen: "رمز جديد", scr: "الفحص", assign: "إسناد إلى…", unassignedB: "مريضات غير مُسندات لأي طبيب؛ لن يصلهنّ تنبيه عاجل على واتساب. أسندهنّ من تبويب المرضى.", signupOpen: "التسجيل الذاتي مفعّل", signupOff: "التسجيل الذاتي متوقف", verif: "التحقق", verNone: "بدون تحقق (غير موصى به)", verWA: "رمز عبر واتساب", verEmail: "رمز عبر البريد", inviteReq: "رمز العيادة إلزامي", oncall: "رقم المناوب", signupWarn: "التسجيل الذاتي مفتوح بدون تحقق من الهاتف/البريد. فعّل واتساب أو SMTP، واطلب رمز العيادة.",
+    pwOpt: "كلمة المرور (اختياري)", pwOptHint: "اتركها فارغة لإنشاء كلمة مؤقتة. ٨ أحرف على الأقل.", reqChange: "يجب تغييرها عند أول دخول",
+    idH: "هوية الرسائل", idOff: "الرسائل تقول «خدمة رسمية من …». تأكد أن هذا صحيح.", idNo: "الرسائل لا تدّعي أنها «رسمية». فعّل RAFIQ_OFFICIAL=1 فقط إذا كانت الخدمة تُشغَّل فعلًا باسم الجهة المذكورة.", idDemo: "الوضع التجريبي: الرسائل تقول إنه نظام تجريبي.", idPhone: "أضف RAFIQ_ORG_PHONE ليتمكن المستخدمون من التحقق منكم.",
+    newClin: "+ طبيب جديد", phone: "هاتف (للتنبيهات)", lang: "لغة التنبيه", mkClinLogin: "إنشاء حساب دخول", ptCount: "المرضى",
+    time: "الوقت", actor: "المنفّذ", action: "الإجراء", patient: "المريض", detail: "تفاصيل", all: "الكل", rulesNote: "هذه القيم يجب أن يعتمدها طبيب مسؤول قبل الاستخدام السريري. تُعدَّل في الملف app/thresholds.json.",
+    glucose: "السكر (ملغ/دل)", bp: "ضغط الدم (ملم زئبق)", trend: "الاتجاهات", adherence: "الالتزام", silent: "أيام الصمت", err: "خطأ", saved: "تم" },
+  en: { tag: "Admin console", dash: "Clinician dashboard", tabs: { system: "System", users: "Users", patients: "Patients", clinicians: "Clinicians", audit: "Audit log", rules: "Clinical rules" },
+    db: "Database", channel: "Messaging channel", sched: "Scheduler", rulesv: "Rules version", on: "running", off: "off", patients: "Patients", users: "Users", clin: "Clinicians", alerts: "Open alerts", readings: "Readings", msgs: "Messages",
+    demoWarn: "Demo mode is ON: synthetic data and well-known passwords. Turn it off (RAFIQ_DEMO_SEED=0) before any real use.", cookieWarn: "Session cookie is not marked Secure. Set RAFIQ_COOKIE_SECURE=1 behind HTTPS.", sqlite: "Running on SQLite: fine for trials. Use PostgreSQL (DATABASE_URL) in production.",
+    newUser: "+ New user", username: "Username", display: "Display name", role: "Role", link: "Linked to", active: "Active", last: "Last login", actions: "Actions", reset: "Reset password", disable: "Disable", enable: "Enable",
+    roles: { admin: "Admin", clinician: "Clinician", patient: "Patient" }, create: "Create", cancel: "Cancel", never: "never", resetDone: "Temporary password (shown once)", mustChange: "must change",
+    enroll: "+ Enroll patient", name: "Name", doctor: "Clinician", conds: "Condition", consent: "Consent", hasLogin: "Login", yes: "yes", no: "no", mkLogin: "Create login",
+    invite: "Clinic code", regen: "New code", scr: "Screening", assign: "Assign to…", unassignedB: "patients have no clinician; urgent WhatsApp alerts cannot reach anyone for them. Assign them in the Patients tab.", signupOpen: "Self-registration is on", signupOff: "Self-registration is off", verif: "Verification", verNone: "None (not recommended)", verWA: "Code via WhatsApp", verEmail: "Code via email", inviteReq: "Clinic code required", oncall: "On-call number", signupWarn: "Self-registration is open without phone/email verification. Enable WhatsApp or SMTP, and require a clinic code.",
+    pwOpt: "Password (optional)", pwOptHint: "Leave empty to generate a temporary one. At least 8 characters.", reqChange: "Must change it at first sign-in",
+    idH: "Message identity", idOff: "Messages say “official service of …”. Make sure this is true.", idNo: "Messages do not claim to be “official”. Set RAFIQ_OFFICIAL=1 only if the service is genuinely operated in the named organisation's name.", idDemo: "Demo mode: messages say this is a demonstration system.", idPhone: "Add RAFIQ_ORG_PHONE so users can verify who you are.",
+    newClin: "+ New clinician", phone: "Phone (for alerts)", lang: "Alert language", mkClinLogin: "Create a login", ptCount: "Patients",
+    time: "Time", actor: "Actor", action: "Action", patient: "Patient", detail: "Detail", all: "All", rulesNote: "These values must be approved by a responsible physician before clinical use. Edit app/thresholds.json.",
+    glucose: "Glucose (mg/dL)", bp: "Blood pressure (mmHg)", trend: "Trends", adherence: "Adherence", silent: "Silent days", err: "Error", saved: "Done" },
+};
+const t = (k) => L[R.lang][k];
+let tab = "system", me = null, cache = {};
+const TABS = ["system", "users", "patients", "clinicians", "audit", "rules"];
+
+function drawTabs() {
+  $("tabs").innerHTML = TABS.map((k) => `<button role="tab" data-t="${k}" aria-selected="${k === tab}">${t("tabs")[k]}</button>`).join("");
+}
+$("tabs").onclick = (e) => { const b = e.target.closest("[data-t]"); if (b) { tab = b.dataset.t; render(); } };
+async function render() {
+  drawTabs(); $("tag").textContent = t("tag"); $("dashlink").textContent = t("dash");
+  $("panel").innerHTML = "";
+  try { await ({ system, users, patients, clinicians, audit, rules }[tab])(); } catch (e) { $("panel").innerHTML = `<div class="banner bad">${esc(e.message)}</div>`; }
+}
+const when = (iso) => (iso ? new Date(iso + "Z").toLocaleString(R.lang === "ar" ? "ar-EG" : "en", { dateStyle: "short", timeStyle: "short" }) : t("never"));
+
+/* ── system ── */
+async function system() {
+  const s = await R.api("/api/admin/system");
+  const stat = (k, v) => `<div class="card stat"><h4>${t(k)}</h4><div class="big num">${R.nf(v)}</div></div>`;
+  $("panel").innerHTML = (s.demo_mode ? `<div class="banner warn">${t("demoWarn")}</div>` : "") + (!s.cookie_secure ? `<div class="banner warn">${t("cookieWarn")}</div>` : "") +
+    (s.database === "SQLite" ? `<div class="banner warn">${t("sqlite")}</div>` : `<div class="banner ok">${t("db")}: ${s.database}</div>`) +
+    `<div class="banner ${s.org.demo ? "warn" : s.org.official ? "ok" : "warn"}"><b>${t("idH")}:</b> ${esc(s.org.name)}${s.org.phone ? " · " + esc(s.org.phone) : ""} · ${s.org.demo ? t("idDemo") : s.org.official ? t("idOff") : t("idNo")}${!s.org.demo && !s.org.phone ? "<br>" + t("idPhone") : ""}</div>` +
+    (s.unassigned_patients ? `<div class="banner bad">${R.nf(s.unassigned_patients)} ${t("unassignedB")}</div>` : "") +
+    (s.signup.enabled && s.signup.verification === "none" ? `<div class="banner warn">${t("signupWarn")}</div>` : "") +
+    `<div class="banner warn">${esc(s.rules_status)}</div>
+     <div class="grid">${stat("patients", s.counts.patients)}${stat("users", s.counts.users)}${stat("clin", s.counts.clinicians)}${stat("alerts", s.counts.open_alerts)}${stat("readings", s.counts.readings)}${stat("msgs", s.counts.messages)}</div>
+     <div class="card" style="margin-top:14px"><table class="kv"><tr><td>${t("db")}</td><td>${s.database}</td></tr><tr><td>${t("channel")}</td><td>${esc(s.channel)}</td></tr>
+     <tr><td>${t("sched")}</td><td>${s.scheduler ? t("on") : t("off")}</td></tr><tr><td>${t("rulesv")}</td><td dir="ltr">${esc(s.rules_version)} · breast ${esc(s.breast_rules)}</td></tr>
+     <tr><td>${t("signupOpen").replace(/ .*/, "")} / ${t("verif")}</td><td>${s.signup.enabled ? t("signupOpen") : t("signupOff")} · ${s.signup.verification === "none" ? t("verNone") : s.signup.verification === "whatsapp" ? t("verWA") : t("verEmail")}${s.signup.invite_required ? " · " + t("inviteReq") : ""}</td></tr>
+     <tr><td>${t("oncall")}</td><td>${s.signup.oncall_phone_set ? t("on") : t("off")}</td></tr></table></div>`;
+}
+
+/* ── users ── */
+async function users() {
+  const [us, cl, pts] = await Promise.all([R.api("/api/admin/users"), R.api("/api/admin/clinicians"), R.api("/api/patients")]);
+  cache = { cl, pts };
+  $("panel").innerHTML = `<div class="bar"><h2>${t("tabs").users}</h2><button class="btn primary" id="nu">${t("newUser")}</button></div>
+   <div class="tbl"><table><tr><th>${t("username")}</th><th>${t("display")}</th><th>${t("role")}</th><th>${t("link")}</th><th>${t("active")}</th><th>${t("last")}</th><th>${t("actions")}</th></tr>
+   ${us.map((u) => `<tr><td dir="ltr">${esc(u.username)}</td><td>${esc(u.display_name)}</td><td><span class="chip ${u.role === "admin" ? "bad" : u.role === "clinician" ? "" : "ok"}">${t("roles")[u.role]}</span></td>
+     <td>${esc(u.clinician_name || u.patient_name || "—")}</td><td>${u.active ? "✓" : "✗"}${u.must_change ? ` <span class="chip warn">${t("mustChange")}</span>` : ""}</td><td>${when(u.last_login)}</td>
+     <td><div class="acts"><button class="btn" data-reset="${u.id}">${t("reset")}</button><button class="btn ${u.active ? "danger" : ""}" data-toggle="${u.id}" data-active="${u.active ? 0 : 1}">${u.active ? t("disable") : t("enable")}</button></div></td></tr>`).join("")}
+   </table></div>`;
+  $("nu").onclick = newUserDialog;
+}
+$("panel").onchange = async (e) => {
+  const a = e.target.closest("[data-assign]");
+  if (a && a.value) { try { await R.post(`/api/admin/patients/${a.dataset.assign}/assign`, { clinician_id: +a.value }); R.toast(t("saved")); render(); } catch (err) { R.toast(err.message); } }
+};
+$("panel").onclick = async (e) => {
+  const r = e.target.closest("[data-reset]"), tg = e.target.closest("[data-toggle]"), rg = e.target.closest("[data-regen]");
+  try {
+    if (rg) { const out = await R.post(`/api/admin/clinicians/${rg.dataset.regen}/invite-code`); R.toast(out.invite_code); render(); }
+    if (r) { const out = await R.post(`/api/admin/users/${r.dataset.reset}/reset-password`); R.showLogin(out, t("resetDone")); render(); }
+    if (tg) { await R.patch(`/api/admin/users/${tg.dataset.toggle}`, { active: tg.dataset.active === "1" }); render(); }
+  } catch (err) { R.toast(err.message); }
+};
+function newUserDialog() {
+  const d = document.createElement("dialog");
+  const linkOpts = (role) => role === "clinician" ? cache.cl.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("")
+    : role === "patient" ? cache.pts.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("") : "";
+  d.innerHTML = `<form id="nf"><h3>${t("newUser")}</h3>
+    <label class="field"><span>${t("username")}</span><input id="n-u" required dir="ltr" pattern="[A-Za-z0-9_.\\-]{3,40}"></label>
+    <label class="field"><span>${t("display")}</span><input id="n-d" required dir="auto"></label>
+    <label class="field"><span>${t("role")}</span><select id="n-r">${["clinician", "admin", "patient"].map((r) => `<option value="${r}">${t("roles")[r]}</option>`).join("")}</select></label>
+    <label class="field" id="n-lw"><span>${t("link")}</span><select id="n-l">${linkOpts("clinician")}</select></label>
+    <label class="field"><span>${t("pwOpt")}</span><input id="n-pw" type="password" autocomplete="new-password" dir="ltr"><small class="note">${t("pwOptHint")}</small></label>
+    <div class="checks"><label><input type="checkbox" id="n-rc" checked> ${t("reqChange")}</label></div>
+    <div class="err" id="n-e"></div><div class="dlg-actions"><button type="button" class="btn" id="n-x">${t("cancel")}</button><button class="btn primary">${t("create")}</button></div></form>`;
+  document.body.appendChild(d);
+  const sync = () => { const r = d.querySelector("#n-r").value; d.querySelector("#n-lw").classList.toggle("hidden", r === "admin"); d.querySelector("#n-l").innerHTML = linkOpts(r); };
+  d.querySelector("#n-r").onchange = sync;
+  d.querySelector("#n-x").onclick = () => { d.close(); d.remove(); };
+  d.querySelector("#nf").onsubmit = async (e) => {
+    e.preventDefault();
+    const role = d.querySelector("#n-r").value, link = d.querySelector("#n-l").value;
+    try {
+      const out = await R.post("/api/admin/users", { username: d.querySelector("#n-u").value, display_name: d.querySelector("#n-d").value, role,
+        clinician_id: role === "clinician" ? +link : null, patient_id: role === "patient" ? +link : null,
+        password: d.querySelector("#n-pw").value || null, require_change: d.querySelector("#n-rc").checked });
+      d.close(); d.remove(); R.showLogin(out); render();
+    } catch (err) { d.querySelector("#n-e").textContent = err.message; }
+  };
+  d.showModal();
+}
+
+/* ── patients ── */
+async function patients() {
+  const [pts, us, cl, cfg] = await Promise.all([R.api("/api/patients"), R.api("/api/admin/users"), R.api("/api/admin/clinicians"), R.api("/api/config")]);
+  const withLogin = new Set(us.filter((u) => u.patient_id).map((u) => u.patient_id)), clName = Object.fromEntries(cl.map((c) => [c.id, c.name]));
+  $("panel").innerHTML = `<div class="bar"><h2>${t("tabs").patients}</h2><button class="btn primary" id="en">${t("enroll")}</button></div>
+   <div class="tbl"><table><tr><th>${t("name")}</th><th>${t("doctor")}</th><th>${t("conds")}</th><th>${t("scr")}</th><th>${t("consent")}</th><th>${t("hasLogin")}</th></tr>
+   ${pts.map((p) => `<tr><td>${esc(p.name)}</td><td>${p.clinician_id ? esc(clName[p.clinician_id] || "—") : `<select class="input" data-assign="${p.id}" style="width:auto"><option value="">${t("assign")}</option>${cl.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select>`}</td><td>${p.conditions.join(" · ")}</td><td>${p.conditions.includes("breast") ? esc(p.screening_status) : "—"}</td><td>${p.consent ? t("yes") : t("no")}</td>
+    <td>${withLogin.has(p.id) ? "✓" : `<button class="btn" data-mk="${p.id}" data-name="${esc(p.name)}">${t("mkLogin")}</button>`}</td></tr>`).join("")}</table></div>`;
+  $("en").onclick = () => R.enrollDialog({ clinicians: cl, dialects: cfg.dialects, countries: cfg.countries, isAdmin: true, onDone: render });
+  document.querySelectorAll("[data-mk]").forEach((b) => (b.onclick = async () => {
+    try { const out = await R.post("/api/admin/users", { display_name: b.dataset.name, role: "patient", patient_id: +b.dataset.mk }); R.showLogin(out); render(); }
+    catch (err) { R.toast(err.message); }
+  }));
+}
+
+/* ── clinicians ── */
+async function clinicians() {
+  const cl = await R.api("/api/admin/clinicians");
+  $("panel").innerHTML = `<div class="bar"><h2>${t("tabs").clinicians}</h2><button class="btn primary" id="nc">${t("newClin")}</button></div>
+   <div class="tbl"><table><tr><th>${t("name")}</th><th>${t("phone")}</th><th>${t("lang")}</th><th>${t("ptCount")}</th><th>${t("username")}</th><th>${t("invite")}</th></tr>
+   ${cl.map((c) => `<tr><td>${esc(c.name)}</td><td dir="ltr">${esc(c.phone || "—")}</td><td>${c.language}</td><td class="num">${c.patients}</td><td dir="ltr">${esc(c.username || "—")}</td>
+     <td><code dir="ltr">${esc(c.invite_code || "—")}</code> <button class="btn" data-regen="${c.id}" style="padding:2px 8px">${t("regen")}</button></td></tr>`).join("")}</table></div>`;
+  $("nc").onclick = () => {
+    const d = document.createElement("dialog");
+    d.innerHTML = `<form id="cf"><h3>${t("newClin")}</h3><label class="field"><span>${t("name")}</span><input id="c-n" required dir="auto"></label>
+      <label class="field"><span>${t("phone")}</span><input id="c-p" dir="ltr" placeholder="962790000000"></label>
+      <label class="field"><span>${t("lang")}</span><select id="c-l"><option value="en">English</option><option value="ar">العربية</option></select></label>
+      <div class="checks"><label><input type="checkbox" id="c-lg" checked> ${t("mkClinLogin")}</label></div>
+      <label class="field"><span>${t("pwOpt")}</span><input id="c-pw" type="password" autocomplete="new-password" dir="ltr"><small class="note">${t("pwOptHint")}</small></label>
+      <div class="checks"><label><input type="checkbox" id="c-rc" checked> ${t("reqChange")}</label></div><div class="err" id="c-e"></div>
+      <div class="dlg-actions"><button type="button" class="btn" id="c-x">${t("cancel")}</button><button class="btn primary">${t("create")}</button></div></form>`;
+    document.body.appendChild(d);
+    d.querySelector("#c-x").onclick = () => { d.close(); d.remove(); };
+    d.querySelector("#cf").onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const out = await R.post("/api/admin/clinicians", { name: d.querySelector("#c-n").value, phone: d.querySelector("#c-p").value.replace(/[\s+\-()]/g, "") || null, language: d.querySelector("#c-l").value, create_login: d.querySelector("#c-lg").checked,
+          password: d.querySelector("#c-pw").value || null, require_change: d.querySelector("#c-rc").checked });
+        d.close(); d.remove(); if (out.login) R.showLogin(out.login); render();
+      } catch (err) { d.querySelector("#c-e").textContent = err.message; }
+    };
+    d.showModal();
+  };
+}
+
+/* ── audit ── */
+async function audit() {
+  const act = $("panel").dataset.act || "";
+  const rows = await R.api("/api/admin/audit?limit=300" + (act ? "&action=" + encodeURIComponent(act) : ""));
+  const actions = [...new Set((cache.actions = [...(cache.actions || []), ...rows.map((r) => r.action)]))].sort();
+  $("panel").innerHTML = `<div class="bar"><h2>${t("tabs").audit}</h2><select class="input" id="af" style="width:auto"><option value="">${t("all")}</option>${actions.map((a) => `<option ${a === act ? "selected" : ""}>${esc(a)}</option>`).join("")}</select></div>
+   <div class="tbl"><table><tr><th>${t("time")}</th><th>${t("actor")}</th><th>${t("action")}</th><th>${t("patient")}</th><th>${t("detail")}</th></tr>
+   ${rows.map((r) => `<tr><td class="num" dir="ltr">${when(r.ts)}</td><td dir="ltr">${esc(r.actor)}</td><td dir="ltr">${esc(r.action)}</td><td>${esc(r.patient_name || "")}</td><td dir="ltr">${esc(r.detail || "")}</td></tr>`).join("")}</table></div>`;
+  $("af").onchange = (e) => { $("panel").dataset.act = e.target.value; audit(); };
+}
+
+/* ── clinical rules (read-only; edited in the JSON file under version control + clinical sign-off) ── */
+async function rules() {
+  const th = await R.api("/api/thresholds");
+  const kv = (o) => Object.entries(o).map(([k, v]) => `<tr><td dir="ltr">${esc(k)}</td><td class="num" dir="ltr">${esc(Array.isArray(v) ? v.join(" – ") : v)}</td></tr>`).join("");
+  $("panel").innerHTML = `<div class="banner warn">${esc(th.status)}<br>${t("rulesNote")}</div><div class="bar"><h2>${t("rulesv")}: <span dir="ltr">${esc(th.version)}</span></h2></div>
+   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div class="card"><h4>${t("glucose")}</h4><table class="kv">${kv(th.glucose_mgdl)}</table></div>
+    <div class="card"><h4>${t("bp")}</h4><table class="kv">${kv(th.bp_mmhg)}</table></div>
+    <div class="card"><h4>${t("trend")}</h4><table class="kv">${kv(th.trend)}</table></div>
+    <div class="card"><h4>${t("adherence")} / ${t("silent")}</h4><table class="kv">${kv(th.adherence)}<tr><td>silent_days_watch</td><td class="num">${th.silent_days_watch}</td></tr></table></div></div>`;
+}
+
+(async function init() {
+  R.chrome({ onLang: () => render() });
+  me = await R.api("/api/auth/me");
+  R.chrome({ who: me.display_name, onLang: () => render() });
+  render();
+})();
+</script>
+</body>
+</html>
