@@ -1,0 +1,30 @@
+{
+  "version": "2026.1-DRAFT",
+  "status": "NOT CLINICALLY APPROVED. These screening ages/intervals and referral timelines are common defaults for demonstration. Your national breast-screening programme and a responsible clinician must set and sign off the real values before any patient use.",
+  "mammogram": {
+    "start_age": 40,
+    "stop_age": 74,
+    "interval_months": 12,
+    "due_soon_days": 30,
+    "overdue_after_days": 60
+  },
+  "awareness_from_age": 20,
+  "elevated_risk_flags": ["family_first_degree", "prior_atypia", "known_mutation", "chest_radiation"],
+  "referral": {
+    "urgent_contact_days": 2,
+    "urgent_visit_days": 14,
+    "routine_visit_days": 30,
+    "chase_after_days": 3,
+    "screening_reminder_every_days": 30,
+    "booked_quiet_days": 45
+  },
+  "birads": {
+    "0": {"action": "recall", "priority": "urgent"},
+    "1": {"action": "routine"},
+    "2": {"action": "routine"},
+    "3": {"action": "short_interval", "months": 6},
+    "4": {"action": "referral", "priority": "urgent"},
+    "5": {"action": "referral", "priority": "urgent"},
+    "6": {"action": "known"}
+  }
+}
